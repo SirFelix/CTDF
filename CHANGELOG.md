@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0 — 2026-09-02
+
+- Bundle Plotly so charts work without a CDN
+- Packaged Windows exe (`build_exe.bat`) starts with an empty job folder
+- Document optional Authenticode signing for the exe
+
 ## 1.3.1 — 2026-09-02
 
 - Convert RedHawk pump rate from gpm to bpm (divide by 42)

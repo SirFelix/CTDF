@@ -2,9 +2,9 @@
 
 Local viewer for coil-tubing jobs: DAQ `.db` files, optional Intelli-Log `.txt` exports, and RedHawk FieldLog / JobLog CSVs.
 
-Version is in `VERSION` (currently 1.2.2). Each change set increments it and is recorded in `CHANGELOG.md`.
+Version is in `VERSION`. Each change set increments it and is recorded in `CHANGELOG.md`.
 
-## Run
+## Run from source
 
 Double-click `run.bat`, or:
 
@@ -16,7 +16,27 @@ py -3 app.py
 
 The app opens at http://127.0.0.1:8765
 
-`app.py` has `TEST_JOB_FOLDER` pointing at the Boling Test Raw Data folder. Comment that assignment out (and uncomment `TEST_JOB_FOLDER = ""`) to fall back to `<repo parent>/Raw Data`.
+When you run from source, the job folder defaults to the Boling Test Raw Data path on this PC. Set `CTDF_TEST_JOB_FOLDER` to another folder, or to empty, to override that. The packaged exe always starts with a blank folder — use Browse.
+
+## Windows exe
+
+On a Windows PC with Python:
+
+```
+build_exe.bat
+```
+
+That writes `dist\CTDF\CTDF.exe`. Zip the whole `dist\CTDF` folder and share that. Job data is not inside the exe; each person uses Browse to pick their own Raw Data folder.
+
+Needs a 16 GB machine if they load large Intelli-Log files. 8 GB is often tight.
+
+The exe is **unsigned** unless you sign it. Windows SmartScreen will warn until you do. To sign after a build, set `CTDF_SIGN_CERT` to your `.pfx` (and `CTDF_SIGN_PASSWORD` if the cert is locked) and run `build_exe.bat` again, or:
+
+```
+signtool sign /fd SHA256 /td SHA256 /tr http://timestamp.digicert.com /f your.pfx dist\CTDF\CTDF.exe
+```
+
+You need a company Authenticode certificate from IT / a CA. This repo cannot sign the file without that cert.
 
 ## Use
 
@@ -24,7 +44,7 @@ The app opens at http://127.0.0.1:8765
 2. Leave DAQ, RedHawk, and Intelli-Log files checked. Intelli-Log is optional.
 3. Click **Load selected**. Large Intelli-Log files can take a few minutes from OneDrive.
 4. Zoom any plot — all four stacked plots stay time-linked and resample from the original points.
-5. Hover a vertical line for DAQ ops comments or RedHawk job comments.
+5. Hover a vertical line for DAQ or RedHawk comments. Each source can be hidden in Display.
 6. **Export HTML** writes a smaller interactive file of the current zoom (anyone can open it in a browser). **Export PNG** is a static snapshot.
 
 DAQ `rig_data` overlaps RedHawk FieldLog. Those DAQ rig traces are off by default so RedHawk is the live-stream source of record; turn them on in Series if you want the overlay.

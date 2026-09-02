@@ -9,7 +9,22 @@ import webbrowser
 from collections import Counter
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+FROZEN = bool(getattr(sys, "frozen", False))
+
+
+def _resource_root() -> Path:
+    if FROZEN and hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS)
+    return Path(__file__).resolve().parent
+
+
+def _exe_dir() -> Path:
+    if FROZEN:
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+
+ROOT = _resource_root()
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
@@ -26,11 +41,33 @@ from parsers.daq import detect_daq_timezone
 
 STATIC = ROOT / "static"
 
-# Local testing path. Comment out TEST_JOB_FOLDER to use <this repo's parent>/Raw Data.
-TEST_JOB_FOLDER = r"C:\Users\dvecseri\OneDrive - WWT International\CTS Opportunity Job History - Boling Test 8.2026\Raw Data"
-# TEST_JOB_FOLDER = ""
+# Used when running from source. The packaged exe starts with an empty folder.
+# Override with environment variable CTDF_TEST_JOB_FOLDER (set to empty to disable).
+_DEV_TEST_JOB_FOLDER = r"C:\Users\dvecseri\OneDrive - WWT International\CTS Opportunity Job History - Boling Test 8.2026\Raw Data"
 
-DEFAULT_DATA = Path(TEST_JOB_FOLDER) if TEST_JOB_FOLDER else (ROOT.parent / "Raw Data")
+
+def _test_job_folder() -> str:
+    if "CTDF_TEST_JOB_FOLDER" in os.environ:
+        return os.environ["CTDF_TEST_JOB_FOLDER"].strip()
+    if FROZEN:
+        return ""
+    return _DEV_TEST_JOB_FOLDER
+
+
+TEST_JOB_FOLDER = _test_job_folder()
+
+
+def _default_job_folder() -> Path | None:
+    if TEST_JOB_FOLDER:
+        path = Path(TEST_JOB_FOLDER)
+        return path
+    if FROZEN:
+        return None
+    fallback = ROOT.parent / "Raw Data"
+    return fallback if fallback.exists() else None
+
+
+DEFAULT_DATA = _default_job_folder()
 
 JOB_TIMEZONES = [
     ("America/Chicago", "US Central (Chicago)"),
@@ -153,10 +190,10 @@ def index() -> str:
 @app.get("/api/defaults")
 def defaults() -> dict:
     return {
-        "folder": str(DEFAULT_DATA),
+        "folder": str(DEFAULT_DATA) if DEFAULT_DATA else "",
         "tz": "America/Chicago",
         "timezones": [{"id": zid, "label": label} for zid, label in JOB_TIMEZONES],
-        "has_raw_data": DEFAULT_DATA.exists(),
+        "has_raw_data": bool(DEFAULT_DATA and DEFAULT_DATA.exists()),
         "version": app_version(),
         "using_test_folder": bool(TEST_JOB_FOLDER),
     }
@@ -224,7 +261,12 @@ def _pick_folder(start: str) -> str:
 def browse_folder(req: ScanRequest) -> dict:
     start = req.folder.strip()
     if not start or not Path(start).exists():
-        start = str(DEFAULT_DATA if DEFAULT_DATA.exists() else ROOT.parent)
+        if DEFAULT_DATA and DEFAULT_DATA.exists():
+            start = str(DEFAULT_DATA)
+        elif FROZEN:
+            start = str(Path.home())
+        else:
+            start = str(_exe_dir().parent)
     picked = _pick_folder(start)
     if not picked:
         return {"folder": start, "cancelled": True}
@@ -233,7 +275,10 @@ def browse_folder(req: ScanRequest) -> dict:
 
 @app.post("/api/scan")
 def scan(req: ScanRequest) -> dict:
-    folder = Path(req.folder.strip() or DEFAULT_DATA)
+    raw = req.folder.strip() or (str(DEFAULT_DATA) if DEFAULT_DATA else "")
+    if not raw:
+        raise HTTPException(400, "Choose a job folder first")
+    folder = Path(raw)
     if not folder.exists():
         raise HTTPException(400, f"Folder not found: {folder}")
     found = _scan_folder(folder)
@@ -513,9 +558,12 @@ def health() -> dict:
 
 
 def main() -> None:
+    import multiprocessing
     import socket
 
     import uvicorn
+
+    multiprocessing.freeze_support()
 
     host = "127.0.0.1"
     preferred = int(os.environ.get("CT_OVERLAY_PORT", "8765"))
