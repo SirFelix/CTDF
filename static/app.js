@@ -764,6 +764,10 @@ el("browseBtn").addEventListener("click", async () => {
       body: JSON.stringify({ folder: el("folder").value }),
     });
     if (!res.ok) {
+      if (res.status === 404) {
+        setStatus("Browse needs this CTDF copy. Close the other window on port 8765, then start this app again.", true);
+        return;
+      }
       setStatus(await res.text(), true);
       return;
     }

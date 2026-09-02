@@ -452,10 +452,38 @@ def health() -> dict:
 
 
 def main() -> None:
+    import socket
+
     import uvicorn
 
     host = "127.0.0.1"
-    port = int(os.environ.get("CT_OVERLAY_PORT", "8765"))
+    preferred = int(os.environ.get("CT_OVERLAY_PORT", "8765"))
+
+    def _port_free(port: int) -> bool:
+        probe = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            probe.bind((host, port))
+            return True
+        except OSError:
+            return False
+        finally:
+            probe.close()
+
+    port = preferred
+    if not _port_free(preferred):
+        chosen = None
+        for candidate in range(preferred + 1, preferred + 16):
+            if _port_free(candidate):
+                chosen = candidate
+                break
+        if chosen is None:
+            print(f"Port {preferred} is already in use and no free port was found nearby.")
+            print("Close the other CTDF / Job Overlay window, then try again.")
+            sys.exit(1)
+        print(f"Port {preferred} is already in use (another CTDF window is probably still open).")
+        print(f"Starting on http://{host}:{chosen} instead.")
+        port = chosen
+
     url = f"http://{host}:{port}"
 
     def _open() -> None:

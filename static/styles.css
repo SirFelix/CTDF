@@ -172,7 +172,8 @@ h2 {
 }
 .opt { font-weight: 400; letter-spacing: 0; text-transform: none; }
 
-input[type="text"] {
+input[type="text"],
+textarea {
   width: 100%;
   background: var(--panel);
   color: var(--text);
@@ -181,13 +182,13 @@ input[type="text"] {
   padding: 7px 8px;
   font: inherit;
 }
-.folder-row {
-  display: flex;
-  gap: 8px;
-  align-items: stretch;
+#folder {
+  min-height: 4.8em;
+  resize: vertical;
+  line-height: 1.4;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
-.folder-row input { flex: 1; min-width: 0; }
-.folder-row button { flex: 0 0 auto; white-space: nowrap; }
 .row { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
 button {
   background: var(--panel);
@@ -230,7 +231,7 @@ button.load-btn:hover {
 .check { display: flex; gap: 6px; align-items: center; color: var(--muted); }
 .field { display: grid; gap: 4px; color: var(--muted); }
 .field input[type="range"] { width: 100%; }
-.hint { color: var(--muted); margin: 0 0 8px; }
+.hint { color: var(--muted); margin: 6px 0 8px; }
 
 .file-list, .series-list {
   max-height: 160px;

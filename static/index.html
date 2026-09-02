@@ -29,17 +29,16 @@
 
     <section>
       <h2>Job folder</h2>
-      <div class="folder-row">
-        <input id="folder" type="text" spellcheck="false" />
-        <button id="browseBtn" type="button" title="Browse for a job folder">Browse…</button>
-      </div>
+      <textarea id="folder" rows="3" spellcheck="false"></textarea>
       <div class="row">
+        <button id="browseBtn" type="button" title="Browse for a job folder">Browse…</button>
         <button id="scanBtn" type="button">Scan files</button>
-        <label class="check">
-          <input id="tzChicago" type="checkbox" checked />
-          America/Chicago
-        </label>
       </div>
+      <label class="check">
+        <input id="tzChicago" type="checkbox" checked />
+        Intelli-Log / RedHawk times are Central
+      </label>
+      <p class="hint">DAQ is UTC. Leave this on so Intelli-Log and RedHawk local clocks line up. Uncheck only if those files were already stored in UTC.</p>
     </section>
 
     <section>
