@@ -185,6 +185,7 @@ def parse_daq(path: str | Path) -> dict:
                         "axis": "y",
                         "x": x,
                         "y": y,
+                        "default_on": False,
                     }
                 if "detection_pressure_psi" in df.columns:
                     x, y = clean_xy(t, df["detection_pressure_psi"], *DAQ_PRESSURE_RANGE)

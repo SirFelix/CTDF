@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.3 — 2026-09-02
+
+- DAQ Tractor Speed is off by default
+
 ## 1.2.2 — 2026-09-02
 
 - Keep Intelli-Log tension when it goes into compression below -5,000 lbf
