@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CTDF — Coil-Tubing Data Fusion
 
 Local viewer for coil-tubing jobs: DAQ `.db` files, optional Intelli-Log `.txt` exports, and RedHawk FieldLog / JobLog CSVs.
@@ -26,3 +27,7 @@ The app opens at http://127.0.0.1:8765
 DAQ `rig_data` overlaps RedHawk FieldLog. Those DAQ rig traces are off by default so RedHawk is the live-stream source of record; turn them on in Series if you want the overlay.
 
 Sentinel values such as `-100000`, empty comment-only rows, and DAQ rig packets whose timestamps do not line up with the logger clock are dropped automatically.
+=======
+# CTDF
+Coil Tubing Data Fusion Program
+>>>>>>> fa2039fe05564a2151ec9dbdcd95ee312ba53d59
