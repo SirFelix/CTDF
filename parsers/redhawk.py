@@ -50,7 +50,7 @@ def _norm_col(name: str) -> str:
 FIELD_MAP = {
     "speed": ("rh_speed", "RedHawk Speed", "speed", "ft/min", "#F472B6", SPEED_RANGE, "y", True),
     "return rate": ("rh_return_rate", "RedHawk Return Rate", "pressure", "bpm", "#2DD4BF", FLOW_RANGE, "y2", True),
-    "pump rate": ("rh_pump_rate", "RedHawk Pump Rate", "pressure", "bpm", "#14B8A6", FLOW_RANGE, "y2", True),
+    "pump rate": ("rh_pump_rate", "RedHawk Pump Rate", "pressure", "bpm", "#B01E1E", FLOW_RANGE, "y2", True),
     "depth": ("rh_depth", "RedHawk Depth", "depth", "ft", "#A3E635", DEPTH_RANGE, "y", True),
     "wellhead": ("rh_wellhead", "RedHawk Wellhead", "pressure", "psi", "#34D399", PRESSURE_RANGE, "y", True),
     "weight": ("rh_weight", "RedHawk Weight", "weight", "lbf", "#FBBF24", WEIGHT_RANGE, "y", True),

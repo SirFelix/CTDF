@@ -231,7 +231,7 @@ def parse_daq(path: str | Path) -> dict:
                     t = _epoch_ms(df["timestamp_s"].to_numpy())
 
                 mapping = [
-                    ("ct_pressure_psi", "daq_rig_ct_pressure", "DAQ Rig CT Pressure", "pressure", "psi", "#1D4E89", DAQ_PRESSURE_RANGE, "y", False),
+                    ("ct_pressure_psi", "daq_rig_ct_pressure", "DAQ Rig CT Pressure", "pressure", "psi", "#1D3489", DAQ_PRESSURE_RANGE, "y", False),
                     ("wh_pressure_psi", "daq_rig_wh_pressure", "DAQ Rig Wellhead", "pressure", "psi", "#2E75B6", DAQ_PRESSURE_RANGE, "y", False),
                     ("wh_flow_rate_bpm", "daq_rig_pump_rate", "DAQ Rig Pump Rate", "pressure", "bpm", "#00A3A1", FLOW_RANGE, "y2", False),
                     ("ct_weight_lbs", "daq_rig_weight", "DAQ Rig Weight", "weight", "lbf", "#7A9E9F", WEIGHT_RANGE, "y", False),
