@@ -8,7 +8,7 @@ import pandas as pd
 from .clean import clean_xy, insert_gap_nans
 
 PRESSURE_RANGE = (-200.0, 15_000.0)
-TENSION_RANGE = (-5_000.0, 80_000.0)
+TENSION_RANGE = (-50_000.0, 80_000.0)
 
 
 def _find_header_row(path: Path) -> int:

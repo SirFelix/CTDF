@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.2 — 2026-09-02
+
+- Keep Intelli-Log tension when it goes into compression below -5,000 lbf
+
 ## 1.2.1 — 2026-09-02
 
 - Job timezone dropdown always includes US and Middle East options
