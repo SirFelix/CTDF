@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 — 2026-09-02
+
+- Fix windowed exe crash: uvicorn logging when there is no console
+
 ## 1.5.0 — 2026-09-02
 
 - Windows exe has no terminal window and exits when the browser tab is closed

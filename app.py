@@ -627,14 +627,24 @@ def goodbye() -> dict:
     return {"ok": True}
 
 
+_log_stream = None
+
+
 def _setup_frozen_logging() -> None:
+    global _log_stream
     if not FROZEN:
         return
     log_path = _exe_dir() / "CTDF.log"
+    _log_stream = open(log_path, "a", encoding="utf-8", buffering=1)
+    if sys.stdout is None:
+        sys.stdout = _log_stream
+    if sys.stderr is None:
+        sys.stderr = _log_stream
     logging.basicConfig(
-        filename=str(log_path),
+        stream=_log_stream,
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
+        force=True,
     )
 
 
@@ -691,12 +701,15 @@ def main() -> None:
         threading.Timer(45.0, _startup_timeout).start()
 
     threading.Timer(1.2, _open).start()
-    config = uvicorn.Config(
-        app,
-        host=host,
-        port=port,
-        log_level="warning" if FROZEN else "info",
-    )
+    server_kw = {
+        "app": app,
+        "host": host,
+        "port": port,
+        "log_level": "warning" if FROZEN else "info",
+    }
+    if FROZEN:
+        server_kw["log_config"] = None
+    config = uvicorn.Config(**server_kw)
     _uvicorn_server = uvicorn.Server(config)
     _uvicorn_server.run()
 
