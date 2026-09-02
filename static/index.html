@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CTDF — Coil-Tubing Data Fusion</title>
+  <link rel="stylesheet" href="/static/styles.css?v=20260901f" />
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script>
+    try {
+      if (localStorage.getItem("ctTheme") === "light") document.documentElement.classList.add("light");
+    } catch (err) {}
+  </script>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="brand">
+        <div class="brand-kicker">CTDF</div>
+        <h1>Coil-Tubing Data Fusion</h1>
+        <p>DAQ · Intelli-Log · RedHawk</p>
+      </div>
+      <button id="sidebarCollapse" type="button" class="hamburger" title="Hide sidebar" aria-label="Hide sidebar">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="sidebar-body">
+
+    <section>
+      <h2>Job folder</h2>
+      <div class="folder-row">
+        <input id="folder" type="text" spellcheck="false" />
+        <button id="browseBtn" type="button" title="Browse for a job folder">Browse…</button>
+      </div>
+      <div class="row">
+        <button id="scanBtn" type="button">Scan files</button>
+        <label class="check">
+          <input id="tzChicago" type="checkbox" checked />
+          America/Chicago
+        </label>
+      </div>
+    </section>
+
+    <section>
+      <h2>DAQ databases</h2>
+      <div id="daqList" class="file-list muted">Scan a folder to list files</div>
+    </section>
+    <section>
+      <h2>Intelli-Log <span class="opt">(optional)</span></h2>
+      <div id="dcList" class="file-list muted">Not required</div>
+    </section>
+    <section>
+      <h2>RedHawk</h2>
+      <div id="rhList" class="file-list muted">FieldLog + JobLog</div>
+    </section>
+
+    <div class="load-actions">
+      <button id="loadBtn" class="primary load-btn" type="button">Load selected</button>
+      <button id="selectAll" type="button">Select all files</button>
+    </div>
+    <div id="status" class="status">Ready</div>
+
+    <section>
+      <h2>Display</h2>
+      <label class="field">Points per trace
+        <input id="nPoints" type="range" min="800" max="16000" step="200" value="3500" />
+        <span id="nPointsVal">3500</span>
+      </label>
+      <label class="check"><input id="showEvents" type="checkbox" /> DAQ detection events</label>
+      <label class="check"><input id="showComments" type="checkbox" checked /> Comment markers</label>
+      <label class="field">Comment line width
+        <input id="commentWidth" type="range" min="0.1" max="1" step="0.05" value="1" />
+        <span id="commentWidthVal">1.00</span>
+      </label>
+    </section>
+
+    <section>
+      <h2>Series</h2>
+      <div id="seriesList" class="series-list muted">Load data to choose traces</div>
+    </section>
+
+    <section>
+      <h2>Export</h2>
+      <p class="hint">HTML uses the current zoom and point count so the file stays small enough to email. PNG is a snapshot anyone can open.</p>
+      <div class="row">
+        <button id="exportHtml" type="button">Export HTML</button>
+        <button id="exportPng" type="button">Export PNG</button>
+      </div>
+    </section>
+    </div>
+  </aside>
+  <div id="sidebarResizer" class="sidebar-resizer" title="Drag to resize"></div>
+
+  <main>
+    <header class="topbar">
+      <button id="sidebarExpand" type="button" class="hamburger hamburger-open" title="Show sidebar" aria-label="Show sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-titles">
+        <div id="jobTitle" class="job-title">No data loaded</div>
+        <div id="jobMeta" class="job-meta">Scan the job Raw Data folder, then load DAQ, RedHawk, and Intelli-Log if you have it.</div>
+      </div>
+      <div class="topbar-right">
+        <div class="legend-note">
+          <span class="swatch daq"></span> DAQ
+          <span class="swatch dc"></span> Intelli-Log
+          <span class="swatch rh"></span> RedHawk
+          <span class="swatch cmt"></span> Comments — hover a line on any plot
+        </div>
+        <button id="themeToggle" type="button" class="theme-toggle" title="Switch to light mode" aria-label="Toggle light and dark mode">
+          <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 3v2.2M12 18.8V21M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M3 12h2.2M18.8 12H21M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/>
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M16.2 14.4A6.4 6.4 0 0 1 9.6 7.8 6.5 6.5 0 1 0 16.2 14.4z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+    <div class="plot-stage">
+      <div id="plot"></div>
+      <div id="loadOverlay" class="load-overlay" hidden>
+        <div class="load-card">
+          <div class="load-spinner" aria-hidden="true"></div>
+          <div id="loadOverlayTitle" class="load-title">Loading</div>
+          <div id="loadOverlayMsg" class="load-msg">Starting…</div>
+          <div class="load-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div id="loadOverlayBar"></div>
+          </div>
+          <div id="loadOverlayPct" class="load-pct">0%</div>
+        </div>
+      </div>
+    </div>
+    <div id="commentTip" class="comment-tip" hidden></div>
+  </main>
+
+  <script src="/static/app.js?v=20260901f"></script>
+</body>
+</html>
