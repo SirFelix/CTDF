@@ -2,7 +2,7 @@
 
 Local viewer for coil-tubing jobs: DAQ `.db` files, optional Intelli-Log `.txt` exports, and RedHawk FieldLog / JobLog CSVs.
 
-Version is in `VERSION` (currently 1.1.0). Each change set increments it and is recorded in `CHANGELOG.md`.
+Version is in `VERSION` (currently 1.2.0). Each change set increments it and is recorded in `CHANGELOG.md`.
 
 ## Run
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-09-02
+
+- Detect job timezone from DAQ `ops_log` (UTC `timestamp_s` vs local `datetime`)
+- Hide timezone controls until **Adjust timezone manually** is checked
+- Add `tzdata` so Windows can resolve IANA zones
+
 ## 1.1.0 — 2026-09-02
 
 - Commentable `TEST_JOB_FOLDER` default for the Boling Raw Data path

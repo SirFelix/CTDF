@@ -6,6 +6,7 @@ import subprocess
 import sys
 import threading
 import webbrowser
+from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -21,6 +22,7 @@ from plotly.subplots import make_subplots
 from pydantic import BaseModel, Field
 
 from engine import JobSession, PANEL_TITLES, PANELS
+from parsers.daq import detect_daq_timezone
 
 STATIC = ROOT / "static"
 
@@ -234,7 +236,24 @@ def scan(req: ScanRequest) -> dict:
         raise HTTPException(400, f"Folder not found: {folder}")
     found = _scan_folder(folder)
     counts = {k: len(v) for k, v in found.items()}
-    return {"folder": str(folder), "files": found, "counts": counts}
+    candidates = [zid for zid, _ in JOB_TIMEZONES]
+    detections = []
+    for item in found["daq"]:
+        det = detect_daq_timezone(item["path"], candidates)
+        if det:
+            detections.append(det)
+    detected = None
+    if detections:
+        winner = Counter(d["id"] for d in detections).most_common(1)[0][0]
+        label = next((lbl for zid, lbl in JOB_TIMEZONES if zid == winner), winner)
+        sample = next(d for d in detections if d["id"] == winner)
+        detected = {
+            **sample,
+            "id": winner,
+            "label": label,
+            "files": sum(1 for d in detections if d["id"] == winner),
+        }
+    return {"folder": str(folder), "files": found, "counts": counts, "detected_tz": detected}
 
 
 _load_lock = threading.Lock()

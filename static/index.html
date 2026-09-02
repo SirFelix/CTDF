@@ -51,12 +51,16 @@
 
     <section>
       <h2>Time</h2>
-      <label class="field">Job timezone
-        <select id="tzJob"></select>
+      <div id="tzAutoNote" class="hint">Scan DAQ files to read the recording timezone from ops_log.</div>
+      <label class="check">
+        <input id="tzManual" type="checkbox" />
+        Adjust timezone manually
       </label>
-      <p class="hint">DAQ unix stamps stay UTC. Intelli-Log and RedHawk use this as the rig’s local clock so traces line up. Open per-source correction if a PC clock was set to the wrong zone.</p>
-      <details class="tz-advanced">
-        <summary>Per-source correction</summary>
+      <div id="tzManualPanel" hidden>
+        <label class="field">Job timezone
+          <select id="tzJob"></select>
+        </label>
+        <p class="hint">DAQ unix stamps stay UTC. Intelli-Log and RedHawk use this as the rig’s local clock. Extra hours fix a PC that was set to the wrong zone.</p>
         <div class="tz-source">
           <span class="tz-source-name">DAQ</span>
           <label class="field">Timezone
@@ -84,7 +88,7 @@
             <input id="shiftRedhawk" type="number" min="-12" max="12" step="1" value="0" />
           </label>
         </div>
-      </details>
+      </div>
     </section>
 
     <div class="load-actions">

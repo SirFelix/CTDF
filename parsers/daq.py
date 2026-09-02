@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
@@ -34,6 +35,87 @@ def _read_table(con: sqlite3.Connection, table: str, columns: list[str]) -> pd.D
         return pd.DataFrame()
     col_sql = ", ".join(f"[{c}]" for c in use)
     return pd.read_sql_query(f"SELECT {col_sql} FROM [{table}]", con)
+
+
+def detect_daq_timezone(path: str | Path, candidates: list[str]) -> dict | None:
+    """Infer the recording timezone from ops_log UTC epoch vs local datetime."""
+    path = Path(path)
+    con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    try:
+        cur = con.cursor()
+        df = None
+        for table in ("ops_log", "daq_data"):
+            if not _table_exists(cur, table):
+                continue
+            existing = {row[1] for row in con.execute(f"PRAGMA table_info([{table}])")}
+            if "timestamp_s" not in existing:
+                continue
+            local_col = next(
+                (
+                    c
+                    for c in ("datetime", "date_time", "local_time", "localtime", "local_datetime")
+                    if c in existing
+                ),
+                None,
+            )
+            if local_col is None:
+                local_col = next((c for c in existing if "datetime" in c.lower()), None)
+            if local_col is None:
+                continue
+            df = pd.read_sql_query(
+                f"SELECT [timestamp_s] AS timestamp_s, [{local_col}] AS datetime "
+                f"FROM [{table}] WHERE [timestamp_s] IS NOT NULL AND [{local_col}] IS NOT NULL "
+                f"AND CAST([{local_col}] AS TEXT) != '' LIMIT 250",
+                con,
+            )
+            if df is not None and not df.empty:
+                break
+        if df is None or df.empty:
+            return None
+
+        utc = pd.to_datetime(df["timestamp_s"], unit="s", utc=True, errors="coerce")
+        local = pd.to_datetime(df["datetime"], errors="coerce", format="mixed")
+        mask = utc.notna() & local.notna()
+        utc = utc.loc[mask]
+        local = local.loc[mask]
+        if local.empty:
+            return None
+        if getattr(local.dt, "tz", None) is not None:
+            local = local.dt.tz_localize(None)
+
+        best_id = None
+        best_hits = -1
+        n = int(local.size)
+        for zid in candidates:
+            try:
+                tz = ZoneInfo(zid)
+            except Exception:
+                continue
+            try:
+                loc = local.dt.tz_localize(tz, ambiguous="infer", nonexistent="shift_forward")
+            except Exception:
+                try:
+                    loc = local.dt.tz_localize(tz, ambiguous=True, nonexistent="shift_forward")
+                except Exception:
+                    continue
+            as_utc = loc.dt.tz_convert("UTC")
+            hits = int(((as_utc - utc).dt.total_seconds().abs() <= 120).sum())
+            if hits > best_hits:
+                best_hits = hits
+                best_id = zid
+        if best_id is None or best_hits < max(2, int(n * 0.25)):
+            return None
+        utc_naive = utc.dt.tz_convert("UTC").dt.tz_localize(None)
+        offset_h = float(((local - utc_naive).dt.total_seconds() / 3600.0).median())
+        return {
+            "id": best_id,
+            "matches": best_hits,
+            "samples": n,
+            "offset_hours": round(offset_h, 2),
+            "file": path.name,
+        }
+    finally:
+        con.close()
 
 
 def parse_daq(path: str | Path) -> dict:

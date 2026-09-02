@@ -245,6 +245,7 @@ button.load-btn:hover {
   text-transform: uppercase;
   font-weight: 650;
 }
+#tzManualPanel { margin-top: 10px; }
 .tz-source {
   display: grid;
   grid-template-columns: 1fr 1fr;

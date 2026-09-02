@@ -722,6 +722,7 @@ function applyScanResult(data) {
   setStatus(
     `Found ${data.counts.daq} DAQ, ${data.counts.datacan} Intelli-Log, ${data.counts.redhawk_field} FieldLog, ${data.counts.redhawk_job} JobLog`
   );
+  applyDetectedTz(data.detected_tz);
 }
 
 async function scanFolder(showOverlay = false) {
@@ -814,13 +815,7 @@ el("loadBtn").addEventListener("click", async () => {
         datacan,
         redhawk_field,
         redhawk_job,
-        tz: el("tzJob").value,
-        tz_job: el("tzJob").value,
-        tz_datacan: el("tzDatacan").value,
-        tz_redhawk: el("tzRedhawk").value,
-        shift_daq: Number(el("shiftDaq").value) || 0,
-        shift_datacan: Number(el("shiftDatacan").value) || 0,
-        shift_redhawk: Number(el("shiftRedhawk").value) || 0,
+        ...timePayload(),
       }),
     });
     const text = await res.text();
@@ -963,8 +958,13 @@ function fillTzSelect(node, zones, includeJob, selected) {
   if (selected && [...node.options].some((o) => o.value === selected)) node.value = selected;
 }
 
+function isTzManual() {
+  return el("tzManual").checked;
+}
+
 function persistTimeSettings() {
   try {
+    localStorage.setItem("ctTzManual", isTzManual() ? "1" : "0");
     localStorage.setItem("ctTzJob", el("tzJob").value);
     localStorage.setItem("ctTzDatacan", el("tzDatacan").value);
     localStorage.setItem("ctTzRedhawk", el("tzRedhawk").value);
@@ -974,21 +974,66 @@ function persistTimeSettings() {
   } catch (err) {}
 }
 
+function timePayload() {
+  if (!isTzManual()) {
+    const job = el("tzJob").value || "America/Chicago";
+    return {
+      tz: job,
+      tz_job: job,
+      tz_datacan: "job",
+      tz_redhawk: "job",
+      shift_daq: 0,
+      shift_datacan: 0,
+      shift_redhawk: 0,
+    };
+  }
+  return {
+    tz: el("tzJob").value,
+    tz_job: el("tzJob").value,
+    tz_datacan: el("tzDatacan").value,
+    tz_redhawk: el("tzRedhawk").value,
+    shift_daq: Number(el("shiftDaq").value) || 0,
+    shift_datacan: Number(el("shiftDatacan").value) || 0,
+    shift_redhawk: Number(el("shiftRedhawk").value) || 0,
+  };
+}
+
+function applyDetectedTz(detected) {
+  const note = el("tzAutoNote");
+  if (detected && detected.id) {
+    const label = detected.label || detected.id;
+    const off = detected.offset_hours != null ? ` (UTC${detected.offset_hours >= 0 ? "+" : ""}${detected.offset_hours})` : "";
+    note.textContent = `From DAQ ops_log: ${label}${off}`;
+    if (!isTzManual()) el("tzJob").value = detected.id;
+  } else {
+    note.textContent = "Could not detect timezone from DAQ ops_log. Enable Adjust timezone manually if traces do not line up.";
+  }
+}
+
+function setManualTz(on) {
+  el("tzManual").checked = on;
+  el("tzManualPanel").hidden = !on;
+}
+
 function initTimeSettings(data) {
   const zones = data.timezones || [];
-  let job = "America/Chicago";
+  let manual = false;
+  let job = data.tz || "America/Chicago";
   let il = "job";
   let rh = "job";
   let sDaq = "0";
   let sIl = "0";
   let sRh = "0";
   try {
-    job = localStorage.getItem("ctTzJob") || data.tz || job;
-    il = localStorage.getItem("ctTzDatacan") || "job";
-    rh = localStorage.getItem("ctTzRedhawk") || "job";
-    sDaq = localStorage.getItem("ctShiftDaq") || "0";
-    sIl = localStorage.getItem("ctShiftDatacan") || "0";
-    sRh = localStorage.getItem("ctShiftRedhawk") || "0";
+    manual = localStorage.getItem("ctTzManual") === "1";
+    if (manual) {
+      job = localStorage.getItem("ctTzJob") || job;
+      il = localStorage.getItem("ctTzDatacan") || "job";
+      rh = localStorage.getItem("ctTzRedhawk") || "job";
+      sDaq = localStorage.getItem("ctShiftDaq") || "0";
+      sIl = localStorage.getItem("ctShiftDatacan") || "0";
+      sRh = localStorage.getItem("ctShiftRedhawk") || "0";
+    }
   } catch (err) {}
   fillTzSelect(el("tzJob"), zones, false, job);
   fillTzSelect(el("tzDatacan"), zones, true, il);
@@ -996,9 +1041,11 @@ function initTimeSettings(data) {
   el("shiftDaq").value = sDaq;
   el("shiftDatacan").value = sIl;
   el("shiftRedhawk").value = sRh;
-  if (Number(sDaq) || Number(sIl) || Number(sRh) || il !== "job" || rh !== "job") {
-    document.querySelector(".tz-advanced")?.setAttribute("open", "");
-  }
+  setManualTz(manual);
+  el("tzManual").addEventListener("change", () => {
+    setManualTz(el("tzManual").checked);
+    persistTimeSettings();
+  });
   ["tzJob", "tzDatacan", "tzRedhawk", "shiftDaq", "shiftDatacan", "shiftRedhawk"].forEach((id) => {
     el(id).addEventListener("change", persistTimeSettings);
   });
