@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.1 — 2026-09-02
+
+- Convert RedHawk pump rate from gpm to bpm (divide by 42)
+
 ## 1.3.0 — 2026-09-02
 
 - Separate DAQ and RedHawk comment markers so each source can be shown or hidden

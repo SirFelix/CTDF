@@ -12,6 +12,7 @@ SPEED_RANGE = (-250.0, 250.0)
 DEPTH_RANGE = (-200.0, 4_000.0)
 WEIGHT_RANGE = (-50_000.0, 150_000.0)
 FLOW_RANGE = (-2.0, 300.0)
+GPM_PER_BBL = 42.0
 
 
 def _read_text(path: Path) -> list[str]:
@@ -81,7 +82,10 @@ def parse_redhawk_fieldlog(path: str | Path, tz_name: str = "America/Chicago") -
         col = col_lookup.get(key)
         if not col:
             continue
-        x, y = clean_xy(t, pd.to_numeric(df[col], errors="coerce"), *rng)
+        vals = pd.to_numeric(df[col], errors="coerce")
+        if key == "pump rate":
+            vals = vals / GPM_PER_BBL
+        x, y = clean_xy(t, vals, *rng)
         x, y = insert_gap_nans(x, y)
         if y.size == 0:
             continue
