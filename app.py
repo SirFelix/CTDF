@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import os
 import subprocess
 import sys
@@ -29,7 +30,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import plotly.graph_objects as go
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
@@ -98,6 +99,60 @@ def app_version() -> str:
 session = JobSession()
 app = FastAPI(title="CTDF — Coil-Tubing Data Fusion")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+_uvicorn_server = None
+_saw_client = False
+_exit_timer: threading.Timer | None = None
+_exit_lock = threading.Lock()
+
+
+def _alert(message: str) -> None:
+    if FROZEN:
+        try:
+            import tkinter as tk
+            from tkinter import messagebox
+
+            root = tk.Tk()
+            root.withdraw()
+            messagebox.showerror("CTDF", message)
+            root.destroy()
+        except Exception:
+            logging.exception("Could not show error dialog")
+    print(message)
+
+
+def _mark_client() -> None:
+    global _saw_client, _exit_timer
+    _saw_client = True
+    with _exit_lock:
+        if _exit_timer is not None:
+            _exit_timer.cancel()
+            _exit_timer = None
+
+
+def _stop_server() -> None:
+    server = _uvicorn_server
+    if server is not None:
+        server.should_exit = True
+    else:
+        os._exit(0)
+
+
+def _schedule_exit(delay: float) -> None:
+    global _exit_timer
+    with _exit_lock:
+        if _exit_timer is not None:
+            _exit_timer.cancel()
+        _exit_timer = threading.Timer(delay, _stop_server)
+        _exit_timer.daemon = True
+        _exit_timer.start()
+
+
+@app.middleware("http")
+async def _desktop_keepalive(request: Request, call_next):
+    if FROZEN and request.url.path != "/api/goodbye":
+        _mark_client()
+    return await call_next(request)
 
 
 class ScanRequest(BaseModel):
@@ -196,6 +251,7 @@ def defaults() -> dict:
         "has_raw_data": bool(DEFAULT_DATA and DEFAULT_DATA.exists()),
         "version": app_version(),
         "using_test_folder": bool(TEST_JOB_FOLDER),
+        "desktop": FROZEN,
     }
 
 
@@ -557,13 +613,40 @@ def health() -> dict:
     return {"ok": True}
 
 
+@app.post("/api/ping")
+def ping() -> dict:
+    if FROZEN:
+        _mark_client()
+    return {"ok": True}
+
+
+@app.post("/api/goodbye")
+def goodbye() -> dict:
+    if FROZEN:
+        _schedule_exit(2.5)
+    return {"ok": True}
+
+
+def _setup_frozen_logging() -> None:
+    if not FROZEN:
+        return
+    log_path = _exe_dir() / "CTDF.log"
+    logging.basicConfig(
+        filename=str(log_path),
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+
+
 def main() -> None:
+    global _uvicorn_server
     import multiprocessing
     import socket
 
     import uvicorn
 
     multiprocessing.freeze_support()
+    _setup_frozen_logging()
 
     host = "127.0.0.1"
     preferred = int(os.environ.get("CT_OVERLAY_PORT", "8765"))
@@ -586,11 +669,12 @@ def main() -> None:
                 chosen = candidate
                 break
         if chosen is None:
-            print(f"Port {preferred} is already in use and no free port was found nearby.")
-            print("Close the other CTDF / Job Overlay window, then try again.")
+            _alert(
+                f"Port {preferred} is already in use and no free port was found nearby.\n"
+                "Close the other CTDF window, then try again."
+            )
             sys.exit(1)
-        print(f"Port {preferred} is already in use (another CTDF window is probably still open).")
-        print(f"Starting on http://{host}:{chosen} instead.")
+        logging.info("Port %s in use; starting on %s", preferred, chosen)
         port = chosen
 
     url = f"http://{host}:{port}"
@@ -598,8 +682,23 @@ def main() -> None:
     def _open() -> None:
         webbrowser.open(url)
 
+    def _startup_timeout() -> None:
+        if not _saw_client:
+            logging.info("No browser connected; exiting")
+            _stop_server()
+
+    if FROZEN:
+        threading.Timer(45.0, _startup_timeout).start()
+
     threading.Timer(1.2, _open).start()
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    config = uvicorn.Config(
+        app,
+        host=host,
+        port=port,
+        log_level="warning" if FROZEN else "info",
+    )
+    _uvicorn_server = uvicorn.Server(config)
+    _uvicorn_server.run()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 — 2026-09-02
+
+- Windows exe has no terminal window and exits when the browser tab is closed
+- Rebuild with `build_exe.bat` (errors go to `CTDF.log` next to the exe)
+
 ## 1.4.0 — 2026-09-02
 
 - Bundle Plotly so charts work without a CDN

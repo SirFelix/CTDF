@@ -1103,6 +1103,20 @@ async function boot() {
   } catch (err) {}
   el("folder").value = folder || "";
   if (el("folder").value.trim()) await scanFolder(true);
+  if (data.desktop) attachDesktopLifetime();
+}
+
+function attachDesktopLifetime() {
+  const ping = () => fetch("/api/ping", { method: "POST", cache: "no-store" }).catch(() => {});
+  ping();
+  setInterval(ping, 5000);
+  const bye = () => {
+    try {
+      navigator.sendBeacon("/api/goodbye");
+    } catch (err) {}
+  };
+  window.addEventListener("pagehide", bye);
+  window.addEventListener("beforeunload", bye);
 }
 
 boot();

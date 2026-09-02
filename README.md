@@ -20,13 +20,11 @@ When you run from source, the job folder defaults to the Boling Test Raw Data pa
 
 ## Windows exe
 
-On a Windows PC with Python:
+Close any running CTDF window, then double-click `build_exe.bat` (or run it from a command prompt in this folder). Wait until it prints `Built dist\CTDF\CTDF.exe`. That rebuilds the exe with your latest code, including color changes.
 
-```
-build_exe.bat
-```
+Zip the whole `dist\CTDF` folder to share. Job data is not inside the exe; each person uses Browse to pick their own Raw Data folder.
 
-That writes `dist\CTDF\CTDF.exe`. Zip the whole `dist\CTDF` folder and share that. Job data is not inside the exe; each person uses Browse to pick their own Raw Data folder.
+The exe opens the browser with no terminal. Closing that tab (or the browser) stops CTDF after a couple of seconds. A refresh does not quit. If something fails, check `CTDF.log` next to `CTDF.exe`.
 
 Needs a 16 GB machine if they load large Intelli-Log files. 8 GB is often tight.
 
