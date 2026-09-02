@@ -25,6 +25,15 @@ from engine import JobSession, PANEL_TITLES, PANELS
 STATIC = ROOT / "static"
 DEFAULT_DATA = ROOT.parent / "Raw Data"
 
+
+def app_version() -> str:
+    try:
+        text = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    except OSError:
+        return "0.0.0"
+    return text or "0.0.0"
+
+
 session = JobSession()
 app = FastAPI(title="CTDF — Coil-Tubing Data Fusion")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
@@ -105,7 +114,8 @@ def _scan_folder(folder: Path) -> dict[str, list[dict]]:
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
-    return (STATIC / "index.html").read_text(encoding="utf-8")
+    html = (STATIC / "index.html").read_text(encoding="utf-8")
+    return html.replace("__CTDF_VERSION__", app_version())
 
 
 @app.get("/api/defaults")
@@ -115,6 +125,7 @@ def defaults() -> dict:
         "folder": folder,
         "tz": "America/Chicago",
         "has_raw_data": DEFAULT_DATA.exists(),
+        "version": app_version(),
     }
 
 

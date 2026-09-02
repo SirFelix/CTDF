@@ -153,7 +153,13 @@ body.sidebar-collapsed .hamburger-open {
   font-weight: 650;
   line-height: 1.2;
 }
-.brand p { margin: 2px 0 14px; color: var(--muted); }
+.brand p { margin: 2px 0 0; color: var(--muted); }
+.brand-version {
+  margin: 2px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
 
 section { margin-top: 16px; }
 h2 {

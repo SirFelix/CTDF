@@ -1,0 +1,16 @@
+---
+description: Bump CTDF version and commit after completing requested changes
+alwaysApply: true
+---
+
+# Versioning and commits
+
+CTDF uses semantic versioning. The source of truth is the `VERSION` file (`MAJOR.MINOR.PATCH`).
+
+After finishing user-requested code or docs changes in this repo:
+
+1. Bump `VERSION`: **PATCH** for fixes, **MINOR** for features, **MAJOR** for breaking changes.
+2. Add a matching section at the top of `CHANGELOG.md`.
+3. Keep the sidebar and static cache-bust query in sync (`__CTDF_VERSION__` in `static/index.html`, filled by `app.py`).
+4. Commit the full change set. The first line of the message must start with the version, e.g. `v1.0.1 Fix box zoom redraw during drag.`
+5. Do not push unless the user asks. Do not bump or commit for questions-only turns.
