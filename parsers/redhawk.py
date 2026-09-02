@@ -9,9 +9,9 @@ from .clean import clean_xy, insert_gap_nans
 
 PRESSURE_RANGE = (-200.0, 15_000.0)
 SPEED_RANGE = (-250.0, 250.0)
-DEPTH_RANGE = (-200.0, 40_000.0)
-WEIGHT_RANGE = (-10_000.0, 150_000.0)
-FLOW_RANGE = (-2.0, 50.0)
+DEPTH_RANGE = (-200.0, 4_000.0)
+WEIGHT_RANGE = (-50_000.0, 150_000.0)
+FLOW_RANGE = (-2.0, 300.0)
 
 
 def _read_text(path: Path) -> list[str]:
