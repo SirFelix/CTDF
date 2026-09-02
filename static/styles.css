@@ -184,6 +184,10 @@ select {
   padding: 7px 8px;
   font: inherit;
 }
+select option {
+  background: var(--panel);
+  color: var(--text);
+}
 #folder {
   min-height: 4.8em;
   resize: vertical;

@@ -948,12 +948,31 @@ function initSidebar() {
   });
 }
 
+const JOB_TZ_OPTIONS = [
+  { id: "America/Chicago", label: "US Central (Chicago)" },
+  { id: "America/New_York", label: "US Eastern" },
+  { id: "America/Denver", label: "US Mountain" },
+  { id: "America/Phoenix", label: "US Arizona (no DST)" },
+  { id: "America/Los_Angeles", label: "US Pacific" },
+  { id: "America/Anchorage", label: "US Alaska" },
+  { id: "America/Puerto_Rico", label: "US Atlantic / Puerto Rico" },
+  { id: "Asia/Riyadh", label: "Arabia (Riyadh / Kuwait / Qatar)" },
+  { id: "Asia/Dubai", label: "Gulf (Dubai / Oman)" },
+  { id: "Asia/Baghdad", label: "Iraq" },
+  { id: "Asia/Tehran", label: "Iran" },
+  { id: "Africa/Cairo", label: "Egypt" },
+  { id: "Asia/Amman", label: "Jordan" },
+  { id: "UTC", label: "UTC" },
+];
+
 function fillTzSelect(node, zones, includeJob, selected) {
+  if (!node) return;
+  const list = zones && zones.length ? zones : JOB_TZ_OPTIONS;
   const opts = [];
   if (includeJob) opts.push({ id: "job", label: "Same as job timezone" });
-  opts.push(...zones);
+  opts.push(...list);
   node.innerHTML = opts
-    .map((z) => `<option value="${z.id}">${z.label}</option>`)
+    .map((z) => `<option value="${escapeHtml(z.id)}">${escapeHtml(z.label)}</option>`)
     .join("");
   if (selected && [...node.options].some((o) => o.value === selected)) node.value = selected;
 }

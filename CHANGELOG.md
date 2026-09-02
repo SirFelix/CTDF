@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1 — 2026-09-02
+
+- Job timezone dropdown always includes US and Middle East options
+
 ## 1.2.0 — 2026-09-02
 
 - Detect job timezone from DAQ `ops_log` (UTC `timestamp_s` vs local `datetime`)

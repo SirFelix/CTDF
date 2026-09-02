@@ -58,7 +58,22 @@
       </label>
       <div id="tzManualPanel" hidden>
         <label class="field">Job timezone
-          <select id="tzJob"></select>
+          <select id="tzJob">
+            <option value="America/Chicago">US Central (Chicago)</option>
+            <option value="America/New_York">US Eastern</option>
+            <option value="America/Denver">US Mountain</option>
+            <option value="America/Phoenix">US Arizona (no DST)</option>
+            <option value="America/Los_Angeles">US Pacific</option>
+            <option value="America/Anchorage">US Alaska</option>
+            <option value="America/Puerto_Rico">US Atlantic / Puerto Rico</option>
+            <option value="Asia/Riyadh">Arabia (Riyadh / Kuwait / Qatar)</option>
+            <option value="Asia/Dubai">Gulf (Dubai / Oman)</option>
+            <option value="Asia/Baghdad">Iraq</option>
+            <option value="Asia/Tehran">Iran</option>
+            <option value="Africa/Cairo">Egypt</option>
+            <option value="Asia/Amman">Jordan</option>
+            <option value="UTC">UTC</option>
+          </select>
         </label>
         <p class="hint">DAQ unix stamps stay UTC. Intelli-Log and RedHawk use this as the rig’s local clock. Extra hours fix a PC that was set to the wrong zone.</p>
         <div class="tz-source">
@@ -73,7 +88,23 @@
         <div class="tz-source">
           <span class="tz-source-name">Intelli-Log</span>
           <label class="field">Timezone
-            <select id="tzDatacan"></select>
+            <select id="tzDatacan">
+              <option value="job">Same as job timezone</option>
+              <option value="America/Chicago">US Central (Chicago)</option>
+              <option value="America/New_York">US Eastern</option>
+              <option value="America/Denver">US Mountain</option>
+              <option value="America/Phoenix">US Arizona (no DST)</option>
+              <option value="America/Los_Angeles">US Pacific</option>
+              <option value="America/Anchorage">US Alaska</option>
+              <option value="America/Puerto_Rico">US Atlantic / Puerto Rico</option>
+              <option value="Asia/Riyadh">Arabia (Riyadh / Kuwait / Qatar)</option>
+              <option value="Asia/Dubai">Gulf (Dubai / Oman)</option>
+              <option value="Asia/Baghdad">Iraq</option>
+              <option value="Asia/Tehran">Iran</option>
+              <option value="Africa/Cairo">Egypt</option>
+              <option value="Asia/Amman">Jordan</option>
+              <option value="UTC">UTC</option>
+            </select>
           </label>
           <label class="field">Extra hours
             <input id="shiftDatacan" type="number" min="-12" max="12" step="1" value="0" />
@@ -82,7 +113,23 @@
         <div class="tz-source">
           <span class="tz-source-name">RedHawk</span>
           <label class="field">Timezone
-            <select id="tzRedhawk"></select>
+            <select id="tzRedhawk">
+              <option value="job">Same as job timezone</option>
+              <option value="America/Chicago">US Central (Chicago)</option>
+              <option value="America/New_York">US Eastern</option>
+              <option value="America/Denver">US Mountain</option>
+              <option value="America/Phoenix">US Arizona (no DST)</option>
+              <option value="America/Los_Angeles">US Pacific</option>
+              <option value="America/Anchorage">US Alaska</option>
+              <option value="America/Puerto_Rico">US Atlantic / Puerto Rico</option>
+              <option value="Asia/Riyadh">Arabia (Riyadh / Kuwait / Qatar)</option>
+              <option value="Asia/Dubai">Gulf (Dubai / Oman)</option>
+              <option value="Asia/Baghdad">Iraq</option>
+              <option value="Asia/Tehran">Iran</option>
+              <option value="Africa/Cairo">Egypt</option>
+              <option value="Asia/Amman">Jordan</option>
+              <option value="UTC">UTC</option>
+            </select>
           </label>
           <label class="field">Extra hours
             <input id="shiftRedhawk" type="number" min="-12" max="12" step="1" value="0" />
