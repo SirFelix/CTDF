@@ -814,7 +814,13 @@ el("loadBtn").addEventListener("click", async () => {
         datacan,
         redhawk_field,
         redhawk_job,
-        tz: el("tzChicago").checked ? "America/Chicago" : "UTC",
+        tz: el("tzJob").value,
+        tz_job: el("tzJob").value,
+        tz_datacan: el("tzDatacan").value,
+        tz_redhawk: el("tzRedhawk").value,
+        shift_daq: Number(el("shiftDaq").value) || 0,
+        shift_datacan: Number(el("shiftDatacan").value) || 0,
+        shift_redhawk: Number(el("shiftRedhawk").value) || 0,
       }),
     });
     const text = await res.text();
@@ -947,16 +953,70 @@ function initSidebar() {
   });
 }
 
+function fillTzSelect(node, zones, includeJob, selected) {
+  const opts = [];
+  if (includeJob) opts.push({ id: "job", label: "Same as job timezone" });
+  opts.push(...zones);
+  node.innerHTML = opts
+    .map((z) => `<option value="${z.id}">${z.label}</option>`)
+    .join("");
+  if (selected && [...node.options].some((o) => o.value === selected)) node.value = selected;
+}
+
+function persistTimeSettings() {
+  try {
+    localStorage.setItem("ctTzJob", el("tzJob").value);
+    localStorage.setItem("ctTzDatacan", el("tzDatacan").value);
+    localStorage.setItem("ctTzRedhawk", el("tzRedhawk").value);
+    localStorage.setItem("ctShiftDaq", el("shiftDaq").value);
+    localStorage.setItem("ctShiftDatacan", el("shiftDatacan").value);
+    localStorage.setItem("ctShiftRedhawk", el("shiftRedhawk").value);
+  } catch (err) {}
+}
+
+function initTimeSettings(data) {
+  const zones = data.timezones || [];
+  let job = "America/Chicago";
+  let il = "job";
+  let rh = "job";
+  let sDaq = "0";
+  let sIl = "0";
+  let sRh = "0";
+  try {
+    job = localStorage.getItem("ctTzJob") || data.tz || job;
+    il = localStorage.getItem("ctTzDatacan") || "job";
+    rh = localStorage.getItem("ctTzRedhawk") || "job";
+    sDaq = localStorage.getItem("ctShiftDaq") || "0";
+    sIl = localStorage.getItem("ctShiftDatacan") || "0";
+    sRh = localStorage.getItem("ctShiftRedhawk") || "0";
+  } catch (err) {}
+  fillTzSelect(el("tzJob"), zones, false, job);
+  fillTzSelect(el("tzDatacan"), zones, true, il);
+  fillTzSelect(el("tzRedhawk"), zones, true, rh);
+  el("shiftDaq").value = sDaq;
+  el("shiftDatacan").value = sIl;
+  el("shiftRedhawk").value = sRh;
+  if (Number(sDaq) || Number(sIl) || Number(sRh) || il !== "job" || rh !== "job") {
+    document.querySelector(".tz-advanced")?.setAttribute("open", "");
+  }
+  ["tzJob", "tzDatacan", "tzRedhawk", "shiftDaq", "shiftDatacan", "shiftRedhawk"].forEach((id) => {
+    el(id).addEventListener("change", persistTimeSettings);
+  });
+}
+
 async function boot() {
   initSidebar();
   const btn = el("themeToggle");
   if (btn) btn.title = isDark() ? "Switch to light mode" : "Switch to dark mode";
   const res = await fetch("/api/defaults");
   const data = await res.json();
+  initTimeSettings(data);
   let folder = data.folder;
   try {
-    const saved = localStorage.getItem("ctFolder");
-    if (saved && saved.trim()) folder = saved.trim();
+    if (!data.using_test_folder) {
+      const saved = localStorage.getItem("ctFolder");
+      if (saved && saved.trim()) folder = saved.trim();
+    }
   } catch (err) {}
   el("folder").value = folder || "";
   if (el("folder").value.trim()) await scanFolder(true);

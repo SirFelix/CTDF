@@ -34,11 +34,6 @@
         <button id="browseBtn" type="button" title="Browse for a job folder">Browse…</button>
         <button id="scanBtn" type="button">Scan files</button>
       </div>
-      <label class="check">
-        <input id="tzChicago" type="checkbox" checked />
-        Intelli-Log / RedHawk times are Central
-      </label>
-      <p class="hint">DAQ is UTC. Leave this on so Intelli-Log and RedHawk local clocks line up. Uncheck only if those files were already stored in UTC.</p>
     </section>
 
     <section>
@@ -52,6 +47,44 @@
     <section>
       <h2>RedHawk</h2>
       <div id="rhList" class="file-list muted">FieldLog + JobLog</div>
+    </section>
+
+    <section>
+      <h2>Time</h2>
+      <label class="field">Job timezone
+        <select id="tzJob"></select>
+      </label>
+      <p class="hint">DAQ unix stamps stay UTC. Intelli-Log and RedHawk use this as the rig’s local clock so traces line up. Open per-source correction if a PC clock was set to the wrong zone.</p>
+      <details class="tz-advanced">
+        <summary>Per-source correction</summary>
+        <div class="tz-source">
+          <span class="tz-source-name">DAQ</span>
+          <label class="field">Timezone
+            <span class="tz-source-fixed">UTC</span>
+          </label>
+          <label class="field">Extra hours
+            <input id="shiftDaq" type="number" min="-12" max="12" step="1" value="0" />
+          </label>
+        </div>
+        <div class="tz-source">
+          <span class="tz-source-name">Intelli-Log</span>
+          <label class="field">Timezone
+            <select id="tzDatacan"></select>
+          </label>
+          <label class="field">Extra hours
+            <input id="shiftDatacan" type="number" min="-12" max="12" step="1" value="0" />
+          </label>
+        </div>
+        <div class="tz-source">
+          <span class="tz-source-name">RedHawk</span>
+          <label class="field">Timezone
+            <select id="tzRedhawk"></select>
+          </label>
+          <label class="field">Extra hours
+            <input id="shiftRedhawk" type="number" min="-12" max="12" step="1" value="0" />
+          </label>
+        </div>
+      </details>
     </section>
 
     <div class="load-actions">

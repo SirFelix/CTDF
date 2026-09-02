@@ -2,7 +2,7 @@
 
 Local viewer for coil-tubing jobs: DAQ `.db` files, optional Intelli-Log `.txt` exports, and RedHawk FieldLog / JobLog CSVs.
 
-Version is in `VERSION` (currently 1.0.1). Each change set increments it and is recorded in `CHANGELOG.md`.
+Version is in `VERSION` (currently 1.1.0). Each change set increments it and is recorded in `CHANGELOG.md`.
 
 ## Run
 
@@ -15,6 +15,8 @@ py -3 app.py
 ```
 
 The app opens at http://127.0.0.1:8765
+
+`app.py` has `TEST_JOB_FOLDER` pointing at the Boling Test Raw Data folder. Comment that assignment out (and uncomment `TEST_JOB_FOLDER = ""`) to fall back to `<repo parent>/Raw Data`.
 
 ## Use
 

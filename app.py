@@ -23,7 +23,29 @@ from pydantic import BaseModel, Field
 from engine import JobSession, PANEL_TITLES, PANELS
 
 STATIC = ROOT / "static"
-DEFAULT_DATA = ROOT.parent / "Raw Data"
+
+# Local testing path. Comment out TEST_JOB_FOLDER to use <this repo's parent>/Raw Data.
+TEST_JOB_FOLDER = r"C:\Users\dvecseri\OneDrive - WWT International\CTS Opportunity Job History - Boling Test 8.2026\Raw Data"
+# TEST_JOB_FOLDER = ""
+
+DEFAULT_DATA = Path(TEST_JOB_FOLDER) if TEST_JOB_FOLDER else (ROOT.parent / "Raw Data")
+
+JOB_TIMEZONES = [
+    ("America/Chicago", "US Central (Chicago)"),
+    ("America/New_York", "US Eastern"),
+    ("America/Denver", "US Mountain"),
+    ("America/Phoenix", "US Arizona (no DST)"),
+    ("America/Los_Angeles", "US Pacific"),
+    ("America/Anchorage", "US Alaska"),
+    ("America/Puerto_Rico", "US Atlantic / Puerto Rico"),
+    ("Asia/Riyadh", "Arabia (Riyadh / Kuwait / Qatar)"),
+    ("Asia/Dubai", "Gulf (Dubai / Oman)"),
+    ("Asia/Baghdad", "Iraq"),
+    ("Asia/Tehran", "Iran"),
+    ("Africa/Cairo", "Egypt"),
+    ("Asia/Amman", "Jordan"),
+    ("UTC", "UTC"),
+]
 
 
 def app_version() -> str:
@@ -49,6 +71,12 @@ class LoadRequest(BaseModel):
     redhawk_field: list[str] = Field(default_factory=list)
     redhawk_job: list[str] = Field(default_factory=list)
     tz: str = "America/Chicago"
+    tz_job: str = ""
+    tz_datacan: str = "job"
+    tz_redhawk: str = "job"
+    shift_daq: float = 0
+    shift_datacan: float = 0
+    shift_redhawk: float = 0
 
 
 class PlotRequest(BaseModel):
@@ -120,12 +148,13 @@ def index() -> str:
 
 @app.get("/api/defaults")
 def defaults() -> dict:
-    folder = str(DEFAULT_DATA) if DEFAULT_DATA.exists() else str(ROOT.parent)
     return {
-        "folder": folder,
+        "folder": str(DEFAULT_DATA),
         "tz": "America/Chicago",
+        "timezones": [{"id": zid, "label": label} for zid, label in JOB_TIMEZONES],
         "has_raw_data": DEFAULT_DATA.exists(),
         "version": app_version(),
+        "using_test_folder": bool(TEST_JOB_FOLDER),
     }
 
 
@@ -265,7 +294,12 @@ async def load(req: LoadRequest) -> dict:
                 datacan_files=datacan_files,
                 redhawk_field=redhawk_field,
                 redhawk_job=redhawk_job,
-                tz_name=req.tz,
+                tz_job=req.tz_job or req.tz,
+                tz_datacan=req.tz_datacan,
+                tz_redhawk=req.tz_redhawk,
+                shift_daq=req.shift_daq,
+                shift_datacan=req.shift_datacan,
+                shift_redhawk=req.shift_redhawk,
                 on_progress=on_progress,
             )
             t0, t1 = session.time_range()

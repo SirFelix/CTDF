@@ -173,7 +173,9 @@ h2 {
 .opt { font-weight: 400; letter-spacing: 0; text-transform: none; }
 
 input[type="text"],
-textarea {
+input[type="number"],
+textarea,
+select {
   width: 100%;
   background: var(--panel);
   color: var(--text);
@@ -232,6 +234,35 @@ button.load-btn:hover {
 .field { display: grid; gap: 4px; color: var(--muted); }
 .field input[type="range"] { width: 100%; }
 .hint { color: var(--muted); margin: 6px 0 8px; }
+.tz-advanced {
+  margin-top: 8px;
+}
+.tz-advanced summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 650;
+}
+.tz-source {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--stroke);
+}
+.tz-source-name {
+  grid-column: 1 / -1;
+  color: var(--text);
+  font-weight: 650;
+}
+.tz-source-fixed {
+  display: block;
+  padding: 7px 8px;
+  color: var(--muted);
+}
 
 .file-list, .series-list {
   max-height: 160px;

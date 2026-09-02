@@ -126,6 +126,23 @@ def _concat_xy(items: list[tuple[np.ndarray, np.ndarray]]) -> tuple[np.ndarray, 
     return x[order], y[order]
 
 
+def _resolve_tz(name: str | None, job_tz: str) -> str:
+    if not name or name in ("job", "same", "same_as_job"):
+        return job_tz
+    return name
+
+
+def _shift_parsed(parsed: dict, hours: float) -> dict:
+    if not hours:
+        return parsed
+    dt = float(hours) * 3_600_000.0
+    for ser in parsed["series"].values():
+        ser["x"] = np.asarray(ser["x"], dtype=np.float64) + dt
+    for c in parsed["comments"]:
+        c["t"] = float(c["t"]) + dt
+    return parsed
+
+
 def _dedupe_comments(comments: list[dict]) -> list[dict]:
     seen: set[tuple] = set()
     out = []
@@ -186,17 +203,37 @@ class JobSession:
         redhawk_field: list[str],
         redhawk_job: list[str],
         tz_name: str | None = None,
+        tz_job: str | None = None,
+        tz_datacan: str = "job",
+        tz_redhawk: str = "job",
+        shift_daq: float = 0,
+        shift_datacan: float = 0,
+        shift_redhawk: float = 0,
         on_progress=None,
     ) -> None:
         self.clear()
-        if tz_name:
-            self.tz_name = tz_name
+        job_tz = tz_job or tz_name or "America/Chicago"
+        self.tz_name = job_tz
+        il_tz = _resolve_tz(tz_datacan, job_tz)
+        rh_tz = _resolve_tz(tz_redhawk, job_tz)
 
         def report(pct: float, msg: str, log: bool = True) -> None:
             if log:
                 self._note(msg)
             if on_progress:
                 on_progress(max(0, min(100, int(pct))), msg)
+
+        def daq_reader(path: str) -> dict:
+            return _shift_parsed(parse_daq(path), shift_daq)
+
+        def il_reader(path: str) -> dict:
+            return _shift_parsed(parse_datacan(path, tz_name=il_tz), shift_datacan)
+
+        def rh_field_reader(path: str) -> dict:
+            return _shift_parsed(parse_redhawk_fieldlog(path, tz_name=rh_tz), shift_redhawk)
+
+        def rh_job_reader(path: str) -> dict:
+            return _shift_parsed(parse_redhawk_joblog(path, tz_name=rh_tz), shift_redhawk)
 
         jobs: list[tuple[str, str, object, int]] = []
 
@@ -208,10 +245,16 @@ class JobSession:
                     size = 1
                 jobs.append((kind, path, reader, size))
 
-        enqueue("DAQ", daq_files, parse_daq)
-        enqueue("Intelli-Log", datacan_files, lambda p: parse_datacan(p, tz_name=self.tz_name))
-        enqueue("RedHawk FieldLog", redhawk_field, lambda p: parse_redhawk_fieldlog(p, tz_name=self.tz_name))
-        enqueue("RedHawk JobLog", redhawk_job, lambda p: parse_redhawk_joblog(p, tz_name=self.tz_name))
+        enqueue("DAQ", daq_files, daq_reader)
+        enqueue("Intelli-Log", datacan_files, il_reader)
+        enqueue("RedHawk FieldLog", redhawk_field, rh_field_reader)
+        enqueue("RedHawk JobLog", redhawk_job, rh_job_reader)
+
+        report(
+            1,
+            f"Time zones: DAQ UTC{shift_daq:+g}h, Intelli-Log {il_tz}{shift_datacan:+g}h, "
+            f"RedHawk {rh_tz}{shift_redhawk:+g}h",
+        )
 
         total = sum(item[3] for item in jobs) or 1
         done = 0

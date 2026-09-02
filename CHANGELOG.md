@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 — 2026-09-02
+
+- Commentable `TEST_JOB_FOLDER` default for the Boling Raw Data path
+- Job timezone dropdown (US and Middle East) instead of a Chicago-only checkbox
+- Per-source timezone and extra-hour shift when a PC clock was set wrong
+- DAQ stays UTC unless you add extra hours
+
 ## 1.0.1 — 2026-09-02
 
 - Job folder path wraps in a taller box; Browse sits under the path
