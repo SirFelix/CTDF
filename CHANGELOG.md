@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0 — 2026-09-02
+
+- Separate DAQ and RedHawk comment markers so each source can be shown or hidden
+
 ## 1.2.3 — 2026-09-02
 
 - DAQ Tractor Speed is off by default

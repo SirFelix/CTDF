@@ -93,6 +93,8 @@ class ExportRequest(PlotRequest):
     title: str = "CTDF — Coil-Tubing Data Fusion"
     dark: bool = True
     comment_width: float = 1.0
+    include_daq_comments: bool = True
+    include_redhawk_comments: bool = True
 
 
 def _classify(path: Path) -> str | None:
@@ -392,7 +394,13 @@ def _export_figure(req: ExportRequest) -> go.Figure:
     if not session.series:
         raise HTTPException(400, "No data loaded")
     traces = session.downsample(req.t0, req.t1, req.n_points, req.series_ids)
-    comments = session.comments_in_range(req.t0, req.t1, req.include_events)
+    comments = [
+        c
+        for c in session.comments_in_range(req.t0, req.t1, req.include_events)
+        if (c["source"] == "daq" and req.include_daq_comments)
+        or (c["source"] == "redhawk" and req.include_redhawk_comments)
+        or (c["source"] == "daq_event" and req.include_events)
+    ]
     dark = req.dark
     bg = "#11151c" if dark else "#ffffff"
     paper = "#0b0d12" if dark else "#f4f5f7"

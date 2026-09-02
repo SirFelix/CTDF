@@ -360,6 +360,17 @@ function commentLabel(c) {
   return { src, text: c.text };
 }
 
+function commentVisible(c) {
+  if (c.source === "daq") return el("showDaqComments").checked;
+  if (c.source === "redhawk") return el("showRhComments").checked;
+  if (c.source === "daq_event") return el("showEvents").checked;
+  return false;
+}
+
+function visibleComments(list) {
+  return list.filter(commentVisible);
+}
+
 function hideCommentTip() {
   const tip = el("commentTip");
   tip.hidden = true;
@@ -413,7 +424,8 @@ function xMsFromPointer(evt) {
 }
 
 function commentsNearPointer(evt) {
-  if (!el("showComments").checked || !hoverComments.length) return [];
+  const pool = visibleComments(hoverComments);
+  if (!pool.length) return [];
   const hit = xMsFromPointer(evt);
   if (!hit) return [];
   const xa = hit.xaxis;
@@ -421,7 +433,7 @@ function commentsNearPointer(evt) {
   const vis1 = timeRange.t1 != null ? timeRange.t1 : fullRange.t1;
   const span = Math.max((vis1 || 1) - (vis0 || 0), 1);
   const thresh = (span / Math.max(xa._length, 1)) * COMMENT_HOVER_PX;
-  return hoverComments.filter((c) => Math.abs(c.t - hit.ms) <= thresh).slice(0, 4);
+  return pool.filter((c) => Math.abs(c.t - hit.ms) <= thresh).slice(0, 4);
 }
 
 function onPlotPointer(evt) {
@@ -528,9 +540,10 @@ function drawPlot(data) {
   });
 
   const shapes = [];
-  if (el("showComments").checked) {
+  const shownComments = visibleComments(data.comments);
+  if (shownComments.length) {
     const color = commentLineColor();
-    for (const c of data.comments) {
+    for (const c of shownComments) {
       for (const ax of COMMENT_AXES) {
         shapes.push({
           type: "line",
@@ -686,11 +699,13 @@ el("showEvents").addEventListener("change", () => {
   hoverComments = [];
   showLod(timeRange, true);
 });
-el("showComments").addEventListener("change", () => {
+function redrawComments() {
   hideCommentTip();
   const data = currentCacheKey ? plotCache.get(currentCacheKey) : null;
   if (data) drawPlot(data);
-});
+}
+el("showDaqComments").addEventListener("change", redrawComments);
+el("showRhComments").addEventListener("change", redrawComments);
 el("commentWidth").addEventListener("input", () => {
   el("commentWidthVal").textContent = Number(el("commentWidth").value).toFixed(2);
   const data = currentCacheKey ? plotCache.get(currentCacheKey) : null;
@@ -860,6 +875,8 @@ el("exportHtml").addEventListener("click", async () => {
       n_points: Number(el("nPoints").value),
       series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),
       include_events: el("showEvents").checked,
+      include_daq_comments: el("showDaqComments").checked,
+      include_redhawk_comments: el("showRhComments").checked,
       title: "CTDF — Boling Test",
       dark: isDark(),
       comment_width: Number(el("commentWidth").value),
