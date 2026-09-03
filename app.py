@@ -620,7 +620,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
             font=dict(size=11),
             tracegroupgap=8,
         ),
-        margin=dict(l=72, r=8, t=128, b=48, autoexpand=False),
+        margin=dict(l=72, r=36, t=128, b=48, autoexpand=False),
         hovermode="x unified",
         autosize=True,
     )

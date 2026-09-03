@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.2 — 2026-09-03
+
+- A little more right padding on HTML export so secondary-axis tick values stay visible
+
 ## 1.8.1 — 2026-09-03
 
 - Comment markers use transparent `#ABB5C9`
