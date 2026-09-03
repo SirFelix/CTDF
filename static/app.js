@@ -868,44 +868,59 @@ el("exportHtml").addEventListener("click", async () => {
   const choice = el("exportPoints").value;
   const full = choice === "full";
   const n_points = choice === "view" || full ? nPoints() : Number(choice);
+  const title = el("exportTitle").value.trim() || "CTDF — Coil-Tubing Data Fusion";
+  const themeSel = el("exportTheme").value;
+  const themes = themeSel === "both" ? ["dark", "light"] : [themeSel];
   el("exportHtml").disabled = true;
   showBusy(
     "Generating HTML",
-    full
-      ? "Embedding every point in the current zoom. Large jobs can take a while."
-      : "Building an interactive file of the current zoom…",
+    themes.length > 1
+      ? "Building dark and light files…"
+      : full
+        ? "Embedding every point in the current zoom. Large jobs can take a while."
+        : "Building an interactive file of the current zoom…",
     true
   );
   setStatus("Generating HTML…");
   try {
-    const res = await fetch("/api/export-html", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        t0: timeRange.t0,
-        t1: timeRange.t1,
-        n_points,
-        full_resolution: full,
-        series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),
-        include_events: el("showEvents").checked,
-        include_daq_comments: el("showDaqComments").checked,
-        include_redhawk_comments: el("showRhComments").checked,
-        title: el("exportTitle").value.trim() || "CTDF — Coil-Tubing Data Fusion",
-        dark: isDark(),
-        comment_width: Number(el("commentWidth").value),
-      }),
-    });
-    if (!res.ok) {
-      setStatus(await res.text(), true);
-      return;
+    const sizes = [];
+    for (let i = 0; i < themes.length; i++) {
+      const theme = themes[i];
+      const res = await fetch("/api/export-html", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          t0: timeRange.t0,
+          t1: timeRange.t1,
+          n_points,
+          full_resolution: full,
+          series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),
+          include_events: el("showEvents").checked,
+          include_daq_comments: el("showDaqComments").checked,
+          include_redhawk_comments: el("showRhComments").checked,
+          title,
+          dark: theme === "dark",
+          comment_width: Number(el("commentWidth").value),
+        }),
+      });
+      if (!res.ok) {
+        setStatus(await res.text(), true);
+        return;
+      }
+      const blob = await res.blob();
+      sizes.push(fmtSize(blob.size));
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = exportHtmlFilename(title, theme);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      if (i < themes.length - 1) await new Promise((r) => setTimeout(r, 400));
     }
-    const blob = await res.blob();
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "ctdf-overlay.html";
-    a.click();
-    URL.revokeObjectURL(a.href);
-    setStatus(`Exported HTML (${fmtSize(blob.size)}). Anyone can open it in a browser.`);
+    setStatus(
+      themes.length > 1
+        ? `Exported HTML (${sizes.join(" + ")}). Dark and light files.`
+        : `Exported HTML (${sizes[0]}). Anyone can open it in a browser.`
+    );
   } catch (err) {
     setStatus(String(err), true);
   } finally {
@@ -913,6 +928,15 @@ el("exportHtml").addEventListener("click", async () => {
     el("exportHtml").disabled = false;
   }
 });
+
+function exportHtmlFilename(title, theme) {
+  const cleaned = String(title || "export")
+    .replace(/[<>:"/\\|?*\u0000-\u001f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/[. ]+$/g, "")
+    .trim() || "export";
+  return `ctdf - ${cleaned}_${theme}.html`;
+}
 
 el("exportPng").addEventListener("click", async () => {
   if (!plotDiv.data) return;

@@ -43,7 +43,7 @@ You need a company Authenticode certificate from IT / a CA. This repo cannot sig
 3. Click **Load selected**. Large Intelli-Log files can take a few minutes from OneDrive.
 4. Zoom any plot — all four stacked plots stay time-linked and resample from the original points.
 5. Hover a vertical line for DAQ or RedHawk comments. Each source can be hidden in Display.
-6. **Export HTML** writes an interactive file of the current zoom that fills the browser. Set an HTML title and choose points per trace (or all points in view) before exporting. **Export PNG** is a static snapshot.
+6. **Export HTML** writes an interactive file of the current zoom that fills the browser. Set an HTML title, theme (dark / light / both), and points per trace. Filenames look like `ctdf - Your Title_dark.html`. **Export PNG** is a static snapshot.
 
 DAQ `rig_data` overlaps RedHawk FieldLog. Those DAQ rig traces are off by default so RedHawk is the live-stream source of record; turn them on in Series if you want the overlay.
 

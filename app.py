@@ -620,7 +620,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
             font=dict(size=11),
             tracegroupgap=8,
         ),
-        margin=dict(l=72, r=18, t=128, b=48, autoexpand=False),
+        margin=dict(l=72, r=8, t=128, b=48, autoexpand=False),
         hovermode="x unified",
         autosize=True,
     )
@@ -633,6 +633,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
     fig.update_yaxes(title_text="ft", title_standoff=6, row=3, col=1)
     fig.update_yaxes(title_text="ft/min", title_standoff=6, row=4, col=1)
     fig.update_xaxes(title_text="Time", row=4, col=1)
+    fig.update_xaxes(domain=[0.0, 1.0])
     _left_align_subplot_titles(fig)
     return fig
 

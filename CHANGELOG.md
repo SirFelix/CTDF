@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.8.0 — 2026-09-03
+
+- HTML export theme: dark, light, or both; filenames are `ctdf - {title}_{dark|light}.html`
+- Stretch exported plots to the right edge (secondary-axis gap removed)
+
 ## 1.7.1 — 2026-09-03
 
 - Tighter HTML export: less gap under the legend, a little more under the main title, graphs closer to the right edge
