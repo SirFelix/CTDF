@@ -187,6 +187,7 @@ class ExportRequest(PlotRequest):
     comment_width: float = 1.0
     include_daq_comments: bool = True
     include_redhawk_comments: bool = True
+    full_resolution: bool = False
 
 
 def _classify(path: Path) -> str | None:
@@ -494,7 +495,13 @@ def plot(req: PlotRequest) -> dict:
 def _export_figure(req: ExportRequest) -> go.Figure:
     if not session.series:
         raise HTTPException(400, "No data loaded")
-    traces = session.downsample(req.t0, req.t1, req.n_points, req.series_ids)
+    traces = session.downsample(
+        req.t0,
+        req.t1,
+        req.n_points,
+        req.series_ids,
+        full_resolution=req.full_resolution,
+    )
     comments = [
         c
         for c in session.comments_in_range(req.t0, req.t1, req.include_events)
@@ -579,11 +586,10 @@ def _export_figure(req: ExportRequest) -> go.Figure:
         paper_bgcolor=paper,
         plot_bgcolor=bg,
         font=dict(color=text, family="Segoe UI, Arial, sans-serif", size=12),
-        legend=dict(orientation="h", y=1.08, x=0, font=dict(size=11)),
+        legend=dict(orientation="h", y=1.02, x=0, font=dict(size=11)),
         margin=dict(l=70, r=70, t=90, b=50),
         hovermode="x unified",
-        height=1100,
-        width=1400,
+        autosize=True,
     )
     fig.update_xaxes(showgrid=True, gridcolor=grid, color=muted, type="date", matches="x")
     fig.update_yaxes(showgrid=True, gridcolor=grid, color=muted, zeroline=False)
@@ -600,11 +606,50 @@ def _export_figure(req: ExportRequest) -> go.Figure:
 @app.post("/api/export-html")
 def export_html(req: ExportRequest) -> Response:
     fig = _export_figure(req)
+    paper = "#0b0d12" if req.dark else "#f4f5f7"
     html = fig.to_html(
         include_plotlyjs="cdn",
         full_html=True,
+        default_width="100%",
+        default_height="100%",
         config={"responsive": True, "displaylogo": False, "scrollZoom": True},
     )
+    fill = f"""
+<style>
+html, body {{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: {paper};
+}}
+.plotly-graph-div, .js-plotly-plot, .plot-container, .svg-container {{
+  width: 100% !important;
+  height: 100% !important;
+}}
+body > div {{
+  width: 100%;
+  height: 100%;
+}}
+</style>
+<script>
+window.addEventListener("resize", function () {{
+  document.querySelectorAll(".js-plotly-plot").forEach(function (gd) {{
+    if (window.Plotly) Plotly.Plots.resize(gd);
+  }});
+}});
+window.addEventListener("load", function () {{
+  document.querySelectorAll(".js-plotly-plot").forEach(function (gd) {{
+    if (window.Plotly) Plotly.Plots.resize(gd);
+  }});
+}});
+</script>
+"""
+    if "</head>" in html:
+        html = html.replace("</head>", fill + "</head>", 1)
+    else:
+        html = fill + html
     return Response(content=html, media_type="text/html")
 
 

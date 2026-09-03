@@ -865,34 +865,53 @@ el("loadBtn").addEventListener("click", async () => {
 
 el("exportHtml").addEventListener("click", async () => {
   if (!catalog.length) return;
-  setStatus("Building HTML…");
-  const res = await fetch("/api/export-html", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      t0: timeRange.t0,
-      t1: timeRange.t1,
-      n_points: Number(el("nPoints").value),
-      series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),
-      include_events: el("showEvents").checked,
-      include_daq_comments: el("showDaqComments").checked,
-      include_redhawk_comments: el("showRhComments").checked,
-      title: "CTDF — Boling Test",
-      dark: isDark(),
-      comment_width: Number(el("commentWidth").value),
-    }),
-  });
-  if (!res.ok) {
-    setStatus(await res.text(), true);
-    return;
+  const choice = el("exportPoints").value;
+  const full = choice === "full";
+  const n_points = choice === "view" || full ? nPoints() : Number(choice);
+  el("exportHtml").disabled = true;
+  showBusy(
+    "Generating HTML",
+    full
+      ? "Embedding every point in the current zoom. Large jobs can take a while."
+      : "Building an interactive file of the current zoom…",
+    true
+  );
+  setStatus("Generating HTML…");
+  try {
+    const res = await fetch("/api/export-html", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        t0: timeRange.t0,
+        t1: timeRange.t1,
+        n_points,
+        full_resolution: full,
+        series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),
+        include_events: el("showEvents").checked,
+        include_daq_comments: el("showDaqComments").checked,
+        include_redhawk_comments: el("showRhComments").checked,
+        title: "CTDF — Boling Test",
+        dark: isDark(),
+        comment_width: Number(el("commentWidth").value),
+      }),
+    });
+    if (!res.ok) {
+      setStatus(await res.text(), true);
+      return;
+    }
+    const blob = await res.blob();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ctdf-overlay.html";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setStatus(`Exported HTML (${fmtSize(blob.size)}). Anyone can open it in a browser.`);
+  } catch (err) {
+    setStatus(String(err), true);
+  } finally {
+    hideBusy();
+    el("exportHtml").disabled = false;
   }
-  const blob = await res.blob();
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "ctdf-overlay.html";
-  a.click();
-  URL.revokeObjectURL(a.href);
-  setStatus(`Exported HTML (${fmtSize(blob.size)}). Anyone can open it in a browser.`);
 });
 
 el("exportPng").addEventListener("click", async () => {

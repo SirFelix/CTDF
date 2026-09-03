@@ -166,7 +166,16 @@
 
     <section>
       <h2>Export</h2>
-      <p class="hint">HTML uses the current zoom and point count so the file stays small enough to email. PNG is a snapshot anyone can open.</p>
+      <p class="hint">HTML uses the current zoom. More points make a larger file. PNG is a snapshot of the chart as shown.</p>
+      <label class="field">HTML points per trace
+        <select id="exportPoints">
+          <option value="view">Same as chart</option>
+          <option value="8000">8,000</option>
+          <option value="16000">16,000</option>
+          <option value="50000">50,000</option>
+          <option value="full">All points in view</option>
+        </select>
+      </label>
       <div class="row">
         <button id="exportHtml" type="button">Export HTML</button>
         <button id="exportPng" type="button">Export PNG</button>

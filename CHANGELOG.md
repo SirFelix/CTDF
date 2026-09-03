@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.0 — 2026-09-03
+
+- Exported HTML fills the browser window and resizes with it
+- Generating HTML overlay with spinner while the file is built
+- HTML export detail: same as chart, 8k / 16k / 50k, or all points in the current zoom
+
 ## 1.5.1 — 2026-09-02
 
 - Fix windowed exe crash: uvicorn logging when there is no console

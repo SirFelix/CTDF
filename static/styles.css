@@ -237,6 +237,7 @@ button.load-btn:hover {
 .check { display: flex; gap: 6px; align-items: center; color: var(--muted); }
 .field { display: grid; gap: 4px; color: var(--muted); }
 .field input[type="range"] { width: 100%; }
+.field select { width: 100%; }
 .hint { color: var(--muted); margin: 6px 0 8px; }
 .tz-advanced {
   margin-top: 8px;

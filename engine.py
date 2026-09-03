@@ -318,6 +318,7 @@ class JobSession:
         t1: float | None,
         n_points: int,
         series_ids: list[str] | None = None,
+        full_resolution: bool = False,
     ) -> list[dict]:
         n_points = max(int(n_points), 200)
         ids = series_ids or list(self.series.keys())
@@ -327,7 +328,10 @@ class JobSession:
             if not ser:
                 continue
             x, y = window_series(ser["x"], ser["y"], t0, t1)
-            xs, ys = lttb_preserve_gaps(x, y, n_points)
+            if full_resolution:
+                xs, ys = x, y
+            else:
+                xs, ys = lttb_preserve_gaps(x, y, n_points)
             out.append(
                 {
                     "id": ser["id"],
