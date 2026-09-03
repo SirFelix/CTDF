@@ -556,8 +556,8 @@ def _export_figure(req: ExportRequest) -> go.Figure:
             secondary_y=secondary,
         )
 
-    line_color = "rgb(168,176,192)" if req.dark else "rgb(92,102,120)"
-    line_opacity = 0.28 if req.dark else 0.22
+    line_color = "rgba(171,181,201,0.32)"
+    line_opacity = 1.0
     for c in comments:
         for row in range(1, 5):
             fig.add_vline(
@@ -583,7 +583,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
                 mode="markers",
                 marker=dict(
                     size=10,
-                    color=line_color,
+                    color="#ABB5C9",
                     symbol="line-ns-open",
                     line=dict(width=1.5),
                 ),

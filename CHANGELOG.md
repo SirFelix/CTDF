@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1 — 2026-09-03
+
+- Comment markers use transparent `#ABB5C9`
+
 ## 1.8.0 — 2026-09-03
 
 - HTML export theme: dark, light, or both; filenames are `ctdf - {title}_{dark|light}.html`

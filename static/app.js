@@ -9,7 +9,7 @@ const AXIS = {
 };
 
 function commentLineColor() {
-  return isDark() ? "rgba(168,176,192,0.28)" : "rgba(92,102,120,0.22)";
+  return "rgba(171,181,201,0.32)";
 }
 const COMMENT_AXES = [
   { xref: "x2", yref: "y domain" },
