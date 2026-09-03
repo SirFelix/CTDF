@@ -51,12 +51,12 @@ FIELD_MAP = {
     "speed": ("rh_speed", "RedHawk Speed", "speed", "ft/min", "#F472B6", SPEED_RANGE, "y", True),
     "return rate": ("rh_return_rate", "RedHawk Return Rate", "pressure", "bpm", "#2DD4BF", FLOW_RANGE, "y2", True),
     "pump rate": ("rh_pump_rate", "RedHawk Pump Rate", "pressure", "bpm", "#B01E1E", FLOW_RANGE, "y2", True),
-    "depth": ("rh_depth", "RedHawk Depth", "depth", "ft", "#A3E635", DEPTH_RANGE, "y", True),
+    "depth": ("rh_depth", "RedHawk Depth", "depth", "ft", "#3AAE2B", DEPTH_RANGE, "y", True),
     "wellhead": ("rh_wellhead", "RedHawk Wellhead", "pressure", "psi", "#34D399", PRESSURE_RANGE, "y", True),
     "weight": ("rh_weight", "RedHawk Weight", "weight", "lbf", "#FBBF24", WEIGHT_RANGE, "y", True),
     "circ pressure": ("rh_circ", "RedHawk Circ Pressure", "pressure", "psi", "#22C55E", PRESSURE_RANGE, "y", True),
     "injector depth": ("rh_inj_depth", "RedHawk Injector Depth", "depth", "ft", "#65A30D", DEPTH_RANGE, "y", False),
-    "traction pressure": ("rh_traction", "RedHawk Traction Pressure", "pressure", "psi", "#86EFAC", PRESSURE_RANGE, "y", False),
+    "traction pressure": ("rh_traction", "RedHawk Traction Pressure", "pressure", "psi", "#59A475", PRESSURE_RANGE, "y", False),
     "differential pressure": ("rh_diff", "RedHawk Differential Pressure", "pressure", "psi", "#4ADE80", PRESSURE_RANGE, "y", False),
 }
 
