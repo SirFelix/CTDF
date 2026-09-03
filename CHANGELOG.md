@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.7.0 — 2026-09-03
+
+- HTML export title field; title is large and centered
+- Subplot titles sit on the left above each panel, under the legend
+- Tighter right margin on exported HTML so secondary axes do not leave a wide gap
+
 ## 1.6.0 — 2026-09-03
 
 - Exported HTML fills the browser window and resizes with it

@@ -492,6 +492,20 @@ def plot(req: PlotRequest) -> dict:
     }
 
 
+def _left_align_subplot_titles(fig: go.Figure) -> None:
+    titles = set(PANEL_TITLES.values())
+    idx = 0
+    for ann in fig.layout.annotations or []:
+        if ann.text not in titles:
+            continue
+        xkey = "xaxis" if idx == 0 else f"xaxis{idx + 1}"
+        axis = fig.layout[xkey]
+        domain = axis.domain
+        left = float(domain[0]) if domain is not None else 0.0
+        ann.update(x=left, xanchor="left", align="left", font=dict(size=13))
+        idx += 1
+
+
 def _export_figure(req: ExportRequest) -> go.Figure:
     if not session.series:
         raise HTTPException(400, "No data loaded")
@@ -520,7 +534,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
         rows=4,
         cols=1,
         shared_xaxes=True,
-        vertical_spacing=0.055,
+        vertical_spacing=0.08,
         subplot_titles=[PANEL_TITLES[p] for p in PANELS],
         specs=[[{"secondary_y": True}], [{"secondary_y": True}], [{"secondary_y": False}], [{"secondary_y": False}]],
     )
@@ -582,24 +596,44 @@ def _export_figure(req: ExportRequest) -> go.Figure:
         )
 
     fig.update_layout(
-        title=req.title,
+        title=dict(
+            text=req.title.strip() or "CTDF — Coil-Tubing Data Fusion",
+            x=0.5,
+            xref="paper",
+            xanchor="center",
+            y=0.995,
+            yref="container",
+            yanchor="top",
+            font=dict(size=28, color=text, family="Segoe UI, Arial, sans-serif"),
+            pad=dict(t=14, b=6),
+        ),
         paper_bgcolor=paper,
         plot_bgcolor=bg,
         font=dict(color=text, family="Segoe UI, Arial, sans-serif", size=12),
-        legend=dict(orientation="h", y=1.02, x=0, font=dict(size=11)),
-        margin=dict(l=70, r=70, t=90, b=50),
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.10,
+            x=0,
+            xanchor="left",
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=11),
+            tracegroupgap=8,
+        ),
+        margin=dict(l=72, r=48, t=168, b=48, autoexpand=False),
         hovermode="x unified",
         autosize=True,
     )
-    fig.update_xaxes(showgrid=True, gridcolor=grid, color=muted, type="date", matches="x")
-    fig.update_yaxes(showgrid=True, gridcolor=grid, color=muted, zeroline=False)
-    fig.update_yaxes(title_text="psi", row=1, col=1, secondary_y=False)
-    fig.update_yaxes(title_text="bpm", row=1, col=1, secondary_y=True)
-    fig.update_yaxes(title_text="lbf", row=2, col=1, secondary_y=False)
-    fig.update_yaxes(title_text="tension lbf", row=2, col=1, secondary_y=True)
-    fig.update_yaxes(title_text="ft", row=3, col=1)
-    fig.update_yaxes(title_text="ft/min", row=4, col=1)
+    fig.update_xaxes(showgrid=True, gridcolor=grid, color=muted, type="date", matches="x", automargin=False)
+    fig.update_yaxes(showgrid=True, gridcolor=grid, color=muted, zeroline=False, automargin=False, ticks="outside", ticklen=3)
+    fig.update_yaxes(title_text="psi", title_standoff=6, row=1, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="bpm", title_standoff=4, row=1, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="lbf", title_standoff=6, row=2, col=1, secondary_y=False)
+    fig.update_yaxes(title_text="tension lbf", title_standoff=4, row=2, col=1, secondary_y=True)
+    fig.update_yaxes(title_text="ft", title_standoff=6, row=3, col=1)
+    fig.update_yaxes(title_text="ft/min", title_standoff=6, row=4, col=1)
     fig.update_xaxes(title_text="Time", row=4, col=1)
+    _left_align_subplot_titles(fig)
     return fig
 
 

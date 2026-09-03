@@ -238,6 +238,17 @@ button.load-btn:hover {
 .field { display: grid; gap: 4px; color: var(--muted); }
 .field input[type="range"] { width: 100%; }
 .field select { width: 100%; }
+.field textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 3.2em;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--stroke);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
 .hint { color: var(--muted); margin: 6px 0 8px; }
 .tz-advanced {
   margin-top: 8px;

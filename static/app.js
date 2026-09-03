@@ -890,7 +890,7 @@ el("exportHtml").addEventListener("click", async () => {
         include_events: el("showEvents").checked,
         include_daq_comments: el("showDaqComments").checked,
         include_redhawk_comments: el("showRhComments").checked,
-        title: "CTDF — Boling Test",
+        title: el("exportTitle").value.trim() || "CTDF — Coil-Tubing Data Fusion",
         dark: isDark(),
         comment_width: Number(el("commentWidth").value),
       }),
