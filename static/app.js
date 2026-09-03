@@ -617,24 +617,53 @@ function asMs(v) {
   return null;
 }
 
-function readVisibleRange() {
-  const layout = plotDiv._fullLayout;
-  if (!layout) return null;
-  const xa = layout.xaxis2 || layout.xaxis || layout.xaxis3 || layout.xaxis4;
-  if (!xa) return null;
-  if (xa.autorange) return { t0: null, t1: null };
-  const r = xa.range;
-  if (!r || r.length < 2) return null;
-  const t0 = asMs(r[0]);
-  const t1 = asMs(r[1]);
+function axisWindow(xa) {
+  if (!xa || !xa.range || xa.range.length < 2) return null;
+  const t0 = asMs(xa.range[0]);
+  const t1 = asMs(xa.range[1]);
   if (t0 == null || t1 == null || !(t1 > t0)) return null;
   return { t0, t1 };
 }
 
-function rangeFromRelayout(ev) {
-  if (ev && (ev["xaxis.autorange"] === true || ev["xaxis2.autorange"] === true || ev["xaxis3.autorange"] === true || ev["xaxis4.autorange"] === true)) {
-    return { t0: null, t1: null };
+function readPlotXRange() {
+  const layout = plotDiv._fullLayout;
+  if (!layout) return null;
+  for (const name of ["xaxis", "xaxis2", "xaxis3", "xaxis4"]) {
+    const win = axisWindow(layout[name]);
+    if (win) return win;
   }
+  return null;
+}
+
+function readVisibleRange() {
+  const layout = plotDiv._fullLayout;
+  if (!layout) return null;
+  let zoomed = null;
+  let anyAuto = false;
+  for (const name of ["xaxis", "xaxis2", "xaxis3", "xaxis4"]) {
+    const xa = layout[name];
+    if (!xa) continue;
+    const win = axisWindow(xa);
+    if (!win) continue;
+    if (xa.autorange) {
+      anyAuto = true;
+      continue;
+    }
+    if (!zoomed) zoomed = win;
+  }
+  if (zoomed) return zoomed;
+  if (anyAuto) return { t0: null, t1: null };
+  return null;
+}
+
+function exportTimeWindow() {
+  const vis = readPlotXRange();
+  if (vis) return vis;
+  if (timeRange.t0 != null && timeRange.t1 != null) return { t0: timeRange.t0, t1: timeRange.t1 };
+  return { t0: null, t1: null };
+}
+
+function rangeFromRelayout(ev) {
   let a = ev && (ev["xaxis.range[0]"] ?? ev["xaxis2.range[0]"] ?? ev["xaxis3.range[0]"] ?? ev["xaxis4.range[0]"]);
   let b = ev && (ev["xaxis.range[1]"] ?? ev["xaxis2.range[1]"] ?? ev["xaxis3.range[1]"] ?? ev["xaxis4.range[1]"]);
   if (a == null || b == null) {
@@ -647,6 +676,13 @@ function rangeFromRelayout(ev) {
   const t0 = asMs(a);
   const t1 = asMs(b);
   if (t0 != null && t1 != null && t1 > t0) return { t0, t1 };
+  const auto =
+    ev &&
+    (ev["xaxis.autorange"] === true ||
+      ev["xaxis2.autorange"] === true ||
+      ev["xaxis3.autorange"] === true ||
+      ev["xaxis4.autorange"] === true);
+  if (auto) return { t0: null, t1: null };
   return readVisibleRange();
 }
 
@@ -884,14 +920,15 @@ el("exportHtml").addEventListener("click", async () => {
   setStatus("Generating HTML…");
   try {
     const sizes = [];
+    const win = exportTimeWindow();
     for (let i = 0; i < themes.length; i++) {
       const theme = themes[i];
       const res = await fetch("/api/export-html", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          t0: timeRange.t0,
-          t1: timeRange.t1,
+          t0: win.t0,
+          t1: win.t1,
           n_points,
           full_resolution: full,
           series_ids: catalog.filter((s) => visibility[s.id] !== false).map((s) => s.id),

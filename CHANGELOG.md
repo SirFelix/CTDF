@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.3 — 2026-09-03
+
+- HTML export uses the visible zoom window and locks the time axis so comments cannot leave empty space on either side
+
 ## 1.8.2 — 2026-09-03
 
 - A little more right padding on HTML export so secondary-axis tick values stay visible

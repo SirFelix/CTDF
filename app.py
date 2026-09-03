@@ -634,6 +634,13 @@ def _export_figure(req: ExportRequest) -> go.Figure:
     fig.update_yaxes(title_text="ft/min", title_standoff=6, row=4, col=1)
     fig.update_xaxes(title_text="Time", row=4, col=1)
     fig.update_xaxes(domain=[0.0, 1.0])
+    x0, x1 = req.t0, req.t1
+    if x0 is None or x1 is None or not (x1 > x0):
+        xs = [v for tr in traces for v in tr["x"] if v is not None]
+        if xs:
+            x0, x1 = min(xs), max(xs)
+    if x0 is not None and x1 is not None and x1 > x0:
+        fig.update_xaxes(range=[x0, x1], autorange=False)
     _left_align_subplot_titles(fig)
     return fig
 
