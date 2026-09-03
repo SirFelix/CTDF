@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1 — 2026-09-03
+
+- Tighter HTML export: less gap under the legend, a little more under the main title, graphs closer to the right edge
+
 ## 1.7.0 — 2026-09-03
 
 - HTML export title field; title is large and centered

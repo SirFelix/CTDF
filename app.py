@@ -502,7 +502,7 @@ def _left_align_subplot_titles(fig: go.Figure) -> None:
         axis = fig.layout[xkey]
         domain = axis.domain
         left = float(domain[0]) if domain is not None else 0.0
-        ann.update(x=left, xanchor="left", align="left", font=dict(size=13))
+        ann.update(x=left, xanchor="left", align="left", font=dict(size=13), yshift=4)
         idx += 1
 
 
@@ -605,7 +605,7 @@ def _export_figure(req: ExportRequest) -> go.Figure:
             yref="container",
             yanchor="top",
             font=dict(size=28, color=text, family="Segoe UI, Arial, sans-serif"),
-            pad=dict(t=14, b=6),
+            pad=dict(t=10, b=18),
         ),
         paper_bgcolor=paper,
         plot_bgcolor=bg,
@@ -613,14 +613,14 @@ def _export_figure(req: ExportRequest) -> go.Figure:
         legend=dict(
             orientation="h",
             yanchor="bottom",
-            y=1.10,
+            y=1.03,
             x=0,
             xanchor="left",
             bgcolor="rgba(0,0,0,0)",
             font=dict(size=11),
             tracegroupgap=8,
         ),
-        margin=dict(l=72, r=48, t=168, b=48, autoexpand=False),
+        margin=dict(l=72, r=18, t=128, b=48, autoexpand=False),
         hovermode="x unified",
         autosize=True,
     )
